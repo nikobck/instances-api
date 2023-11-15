@@ -141,11 +141,6 @@ get "/instances.json" do |env|
   end
 end
 
-error 404 do |env|
-  env.redirect "/"
-  halt env, status_code: 302, response: ""
-end
-
 static_headers do |response, filepath, filestat|
   response.headers.add("Cache-Control", "max-age=86400")
 end
@@ -159,6 +154,7 @@ SORT_PROCS = {
   "cors"     => ->(name : String, instance : Instance) { instance[:cors] == nil ? 2 : instance[:cors] ? 0 : 1 },
   "api"      => ->(name : String, instance : Instance) { instance[:api] == nil ? 2 : instance[:api] ? 0 : 1 },
   "users"    => ->(name : String, instance : Instance) { -(instance[:stats]?.try &.["usage"]?.try &.["users"]["total"].as_i || 0) },
+  "playback" => ->(name : String, instance : Instance) { -(instance[:stats]?.try &.["playback"]?.try &.["ratio"]?.try &.as_f || -1.0) },
   "version"  => ->(name : String, instance : Instance) { instance[:stats]?.try &.["software"]?.try &.["version"].as_s.try &.split("-", 2)[0].split(".").map { |a| -a.to_i } || [0, 0, 0] },
 }
 
